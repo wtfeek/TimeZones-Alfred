@@ -103,30 +103,34 @@ fi
 #
 if [[ $time_search =~ ^[0-9:]+$ ]] ; then
 
-    # HH
-    if [[ $time_search =~ ^[0-9]{2}$ ]]; then
-        #echo "2 digits" >> /tmp/alfred.txt
-        time_search=${time_search}00
-    fi
-    
-    # H (pad to 0H)
-    if [[ $time_search =~ ^[0-9]{1}$ ]]; then
-        #echo "1 digit" >> /tmp/alfred.txt
-        time_search=0${time_search}00
-    fi
-    
-    # H: (pad to 0H:)
-    if [[ $time_search =~ ^[0-9]{1}\: ]]; then
-        #echo "1 digit" >> /tmp/alfred.txt
-        time_search=0${time_search}
-    fi    
-    
-    # pad seconds
-    time_search=${time_search//:}00
+    if (( "$time_search" >= 700934400)) ; then
+        dateToConvert=$(date -r $time_search +'%Y%m%d')
+        timeToConvert=$(date -r $time_search +'%H%M%S')
+    else
+        # HH
+        if [[ $time_search =~ ^[0-9]{2}$ ]]; then
+            #echo "2 digits" >> /tmp/alfred.txt
+            time_search=${time_search}00
+        fi
+        
+        # H (pad to 0H)
+        if [[ $time_search =~ ^[0-9]{1}$ ]]; then
+            #echo "1 digit" >> /tmp/alfred.txt
+            time_search=0${time_search}00
+        fi
+        
+        # H: (pad to 0H:)
+        if [[ $time_search =~ ^[0-9]{1}\: ]]; then
+            #echo "1 digit" >> /tmp/alfred.txt
+            time_search=0${time_search}
+        fi    
+        
+        # pad seconds
+        time_search=${time_search//:}00
 
-    #echo ${time_search} >> /tmp/alfred.txt
-    timeToConvert=${time_search}
-
+        #echo ${time_search} >> /tmp/alfred.txt
+        timeToConvert=${time_search}
+    fi
     # todo this is weird
     time_search=
 else
@@ -181,7 +185,9 @@ while IFS='|' read -r city country timezone country_code telephone_code favourit
     setTimeOptionArguments="-jf %Y%m%d%H%M%S%z $dateToConvert$timeToConvert$timezoneOffsetToConvert"
 
     city_time=$(TZ=$timezone date $setTimeOptionArguments +"$TIME_FORMAT_STR")
-    city_date=$(TZ=$timezone date $setTimeOptionArguments +"%A, %d %B %Y" )
+    # city_date=$(TZ=$timezone date $setTimeOptionArguments +"%A, %d %B %Y" )
+    city_date=$(TZ=$timezone date $setTimeOptionArguments +"%A [%Y-%m-%d %H:%M:%S]" )
+
 
     #Determine flag icon
     country_flag=$(echo "$country" | tr '[A-Z]' '[a-z]')
